@@ -5,12 +5,19 @@
 ; the secondary clipboard
 secondaryClip := ""
 
+; the cached prefix and suffix
+prefix := ""
+suffix := ""
+
 ; the cache for clipboard
 clipCache := ""
 
 ; concatenation function
 Concatenate2(x, y) {
 	Return, x y
+}
+Concatenate3(x, y, z) {
+	Return, x y z
 }
 
 ; secondary copy (ctrl + n)
@@ -48,5 +55,33 @@ clipCache := clipboard					; cache clipboard first
 send ^c							; invoke copy command
 ClipWait
 secondaryClip := Concatenate2(secondaryClip, clipboard)	; concatenate copied selected text to secondary clip
+clipboard := clipCache					; put the cached clipboard back
+return
+
+; set prefix (ctrl + b)
+^b::
+clipCache := clipboard					; cache clipboard first
+send ^c							; invoke copy command
+ClipWait
+prefix := clipboard					; save copied prefix to prefix variable
+clipboard := clipCache					; put the cached clipboard back
+return
+
+; set suffix (alt + b)
+!b::
+clipCache := clipboard					; cache clipboard first
+send ^c							; invoke copy command
+ClipWait
+suffix := clipboard					; save copied suffix to prefix variable
+clipboard := clipCache					; put the cached clipboard back
+return
+
+; prepend and append (ctrl + alt + b)
+^!b::
+clipCache := clipboard					; cache clipboard first
+send ^c							; invoke copy command
+ClipWait
+clipboard := Concatenate3(prefix, clipboard, suffix)	; concatenate prefix before and suffix after clipboard
+Send, ^v						; paste combined clipboard
 clipboard := clipCache					; put the cached clipboard back
 return
